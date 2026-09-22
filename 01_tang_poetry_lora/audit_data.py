@@ -1,8 +1,14 @@
 import json
+import re
 from pathlib import Path
+from collections import Counter
 
 REQUIRED = {"id", "title", "author", "prompt", "completion"}
 SPLITS = ["train", "dev", "test"]
+
+
+def normalize_poem(text: str) -> str:
+    return re.sub(r"\s+", "", (text or "").strip())
 
 
 def load_split(name):
@@ -27,14 +33,25 @@ def load_split(name):
     return rows, bad_json, missing
 
 
+def duplicate_count(values):
+    counts = Counter(values)
+    return sum(count - 1 for count in counts.values() if count > 1)
+
+
 def main():
     loaded = {}
     for split in SPLITS:
         rows, bad_json, missing = load_split(split)
         loaded[split] = rows
+        poem_values = [
+            normalize_poem(x.get("completion", ""))
+            for x in rows
+            if x.get("completion")
+        ]
         print(
             f"{split}: n={len(rows)}, bad_json={bad_json}, "
-            f"missing_required_fields={missing}"
+            f"missing_required_fields={missing}, "
+            f"within_split_poem_duplicates={duplicate_count(poem_values)}"
         )
 
     print("\nFirst train sample (decoded as UTF-8):")
@@ -51,7 +68,11 @@ def main():
         return {x["id"] for x in rows if x.get("id")}
 
     def poems(rows):
-        return {x["completion"].strip() for x in rows if x.get("completion")}
+        return {
+            normalize_poem(x["completion"])
+            for x in rows
+            if x.get("completion")
+        }
 
     for a, b in [("train", "dev"), ("train", "test"), ("dev", "test")]:
         id_overlap = ids(loaded[a]) & ids(loaded[b])
@@ -68,6 +89,16 @@ def main():
         f"\nall rows={len(all_rows)}, unique non-empty ids={unique_ids}, "
         f"unique poem texts={unique_poems}"
     )
+
+    clean = (
+        all(len(loaded[s]) > 0 for s in SPLITS)
+        and unique_poems == len(all_rows)
+        and all(
+            not (poems(loaded[a]) & poems(loaded[b]))
+            for a, b in [("train", "dev"), ("train", "test"), ("dev", "test")]
+        )
+    )
+    print("AUDIT:", "PASS" if clean else "FAIL")
 
 
 if __name__ == "__main__":
