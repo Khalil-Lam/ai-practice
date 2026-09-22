@@ -23,6 +23,14 @@
 - Dev count: 120
 - Test count: 120
 - Seed: 42
+- First audit result:
+  - bad_json = 0 for all splits
+  - missing_required_fields = 0 for all splits
+  - train/dev exact poem-text overlap = 1
+  - train/test exact poem-text overlap = 0
+  - dev/test exact poem-text overlap = 0
+  - 1200 rows but 1194 unique poem texts
+- Action: dataset construction script revised to deduplicate normalized poem text before train/dev/test splitting; a second audit is required before training.
 - Note: Windows PowerShell displayed UTF-8 JSON as mojibake when using Get-Content without -Encoding utf8; this is a display/decoding issue, not evidence that the JSON file itself is corrupted.
 
 ### Model
