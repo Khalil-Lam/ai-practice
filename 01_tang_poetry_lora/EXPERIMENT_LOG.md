@@ -16,12 +16,14 @@
 
 ### Data
 
-- Upstream source:
-- Data preparation command:
-- Train count:
-- Dev count:
-- Test count:
+- Upstream source: chinese-poetry/chinese-poetry (全唐诗 JSON)
+- Data preparation command: python prepare_data.py --files 3 --limit 1200
+- Source shards: poet.tang.0.json, poet.tang.1000.json, poet.tang.2000.json
+- Train count: 960
+- Dev count: 120
+- Test count: 120
 - Seed: 42
+- Note: Windows PowerShell displayed UTF-8 JSON as mojibake when using Get-Content without -Encoding utf8; this is a display/decoding issue, not evidence that the JSON file itself is corrupted.
 
 ### Model
 
