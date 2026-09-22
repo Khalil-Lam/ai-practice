@@ -4,13 +4,15 @@
 
 ### Environment
 
-- Date:
-- GPU:
-- GPU memory:
-- Python:
-- PyTorch:
-- Transformers:
-- PEFT:
+- Date: 2026-09-22
+- GPU: NVIDIA GeForce RTX 5070 Laptop GPU
+- GPU memory: 7.96 GB
+- Python: 3.11.15
+- PyTorch: 2.11.0+cu128
+- Transformers: 5.17.0
+- PEFT: 0.21.0
+- CUDA available: True
+- BF16 supported: True
 
 ### Data
 
@@ -19,7 +21,7 @@
 - Train count:
 - Dev count:
 - Test count:
-- Seed:
+- Seed: 42
 
 ### Model
 
