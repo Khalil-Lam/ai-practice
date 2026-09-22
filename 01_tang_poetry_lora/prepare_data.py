@@ -15,6 +15,11 @@ def clean_text(text: str) -> str:
     return re.sub(r"\s+", "", (text or "").strip())
 
 
+def poem_key(completion: str) -> str:
+    """Normalize whitespace so exact poem-text duplicates share one key."""
+    return re.sub(r"\s+", "", completion)
+
+
 def is_usable(item: dict) -> bool:
     title = clean_text(item.get("title", ""))
     paragraphs = [clean_text(x) for x in item.get("paragraphs", [])]
@@ -47,6 +52,8 @@ def main():
     args = parser.parse_args()
 
     rows = []
+    seen_poems = set()
+    exact_duplicates_removed = 0
 
     for i in range(args.files):
         idx = i * 1000
@@ -63,6 +70,14 @@ def main():
             title = clean_text(item["title"])
             author = clean_text(item.get("author", "佚名"))
             completion = "\n".join(clean_text(x) for x in item["paragraphs"])
+            key = poem_key(completion)
+
+            # 先按诗歌正文去重，再进行 train/dev/test 切分。
+            # 这样同一首诗不会同时出现在训练集和验证/测试集。
+            if key in seen_poems:
+                exact_duplicates_removed += 1
+                continue
+            seen_poems.add(key)
 
             rows.append(
                 {
@@ -99,6 +114,7 @@ def main():
 
         print(f"{split_name}: {len(items)} -> {path}")
 
+    print(f"exact poem-text duplicates removed before split: {exact_duplicates_removed}")
     print("\nDone.")
     print("IMPORTANT: test.jsonl 只用于最后评测，不用于选 checkpoint 或调参。")
 
